@@ -4,7 +4,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.LinkedList;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -19,20 +18,19 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 public class EventoView extends JFrame {
-    // ── Campos do formulário ──────────────────────────────────────────────────
+    // ── Campos do formulário 
     private JTextField campoNome       = new JTextField(20);
     private JTextField campoLocal      = new JTextField(20);
-    private JTextField campoData       = new JTextField(20); // formato: 
+    private JTextField campoData       = new JTextField(20); 
     private JTextField campoCapacidade = new JTextField(20);
  
-    // ── Tabela ────────────────────────────────────────────────────────────────
+    // ── Tabela 
     private DefaultTableModel modeloTabela;
     private JTable tabela;
  
-    // ── DAO ───────────────────────────────────────────────────────────────────
+    // ── DAO 
     private EventoDAO eventoDAO = new EventoDAO();
  
-    // ─────────────────────────────────────────────────────────────────────────
     public EventoView() {
         setTitle("Organização de Eventos");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -48,7 +46,7 @@ public class EventoView extends JFrame {
         setVisible(true);
     }
  
-    // ── Painel superior: formulário ───────────────────────────────────────────
+    // ── Painel superior: formulário 
     private JPanel criarPainelFormulario() {
         JPanel painel = new JPanel(new GridBagLayout());
         painel.setBorder(BorderFactory.createTitledBorder("Novo Evento"));
@@ -71,7 +69,7 @@ public class EventoView extends JFrame {
         return painel;
     }
  
-    // ── Painel central: tabela ────────────────────────────────────────────────
+    // ── Painel central: tabela 
     private JPanel criarPainelTabela() {
         String[] colunas = {"ID", "Nome", "Local", "Data", "Capacidade"};
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -93,7 +91,7 @@ public class EventoView extends JFrame {
         return painel;
     }
  
-    // ── Painel inferior: botões ───────────────────────────────────────────────
+    // ── Painel inferior: botões 
     private JPanel criarPainelBotoes() {
         JButton btnInserir    = new JButton("Inserir Evento");
         JButton btnAtualizar  = new JButton("Atualizar Lista");
@@ -110,7 +108,7 @@ public class EventoView extends JFrame {
         return painel;
     }
  
-    // ── Lógica: carregar eventos na tabela ────────────────────────────────────
+    // ── Lógica: carregar eventos na tabela 
     private void carregarTabela() {
         modeloTabela.setRowCount(0); // limpa as linhas existentes
         LinkedList<Evento> lista = eventoDAO.listar();
@@ -125,7 +123,7 @@ public class EventoView extends JFrame {
         }
     }
  
-    // ── Lógica: inserir evento ────────────────────────────────────────────────
+    // ── Lógica: inserir evento 
     private void inserirEvento() {
         String nome       = campoNome.getText().trim();
         String local      = campoLocal.getText().trim();
@@ -165,7 +163,7 @@ public class EventoView extends JFrame {
         carregarTabela();
     }
  
-    // ── Lógica: preencher formulário ao clicar na tabela ─────────────────────
+    // ── Preenchimento do formulário ao clicar na tabela 
     private void preencherFormularioComLinhaSelecionada() {
         int linha = tabela.getSelectedRow();
         if (linha < 0) return;
@@ -175,7 +173,7 @@ public class EventoView extends JFrame {
         campoCapacidade.setText(String.valueOf(modeloTabela.getValueAt(linha, 4)));
     }
  
-    // ── Lógica: limpar campos ─────────────────────────────────────────────────
+    // ── Limpar campos 
     private void limparCampos() {
         campoNome.setText("");
         campoLocal.setText("");
@@ -184,7 +182,7 @@ public class EventoView extends JFrame {
         tabela.clearSelection();
     }
  
-    // ── Ponto de entrada ──────────────────────────────────────────────────────
+    // ── Ponto de entrada 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(EventoView::new);
     }

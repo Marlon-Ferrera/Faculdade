@@ -4,7 +4,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.LinkedList;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -244,7 +243,7 @@ public class EventoView extends JFrame {
     }
 
  
-    // ──limpar campos 
+    // limpar campos 
     private void limparCampos() {
         campoNome.setText("");
         campoLocal.setText("");
@@ -254,7 +253,7 @@ public class EventoView extends JFrame {
         idSelecionado = -1;
     }
  
-    // ── Ponto de entrada 
+    // Ponto de entrada 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(EventoView::new);
     }

@@ -4,6 +4,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.LinkedList;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,19 +19,24 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 public class EventoView extends JFrame {
-    // ── Campos do formulário 
+    // Campos do formulário 
     private JTextField campoNome       = new JTextField(20);
     private JTextField campoLocal      = new JTextField(20);
     private JTextField campoData       = new JTextField(20); 
     private JTextField campoCapacidade = new JTextField(20);
+    
+ // ID do evento selecionado (usado para editar/excluir) 
+    private int idSelecionado = -1;
+
  
-    // ── Tabela 
+    // Tabela 
     private DefaultTableModel modeloTabela;
     private JTable tabela;
  
-    // ── DAO 
+    // DAO
     private EventoDAO eventoDAO = new EventoDAO();
  
+    
     public EventoView() {
         setTitle("Organização de Eventos");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -46,7 +52,7 @@ public class EventoView extends JFrame {
         setVisible(true);
     }
  
-    // ── Painel superior: formulário 
+    // Painel superior: formulário 
     private JPanel criarPainelFormulario() {
         JPanel painel = new JPanel(new GridBagLayout());
         painel.setBorder(BorderFactory.createTitledBorder("Novo Evento"));
@@ -69,7 +75,7 @@ public class EventoView extends JFrame {
         return painel;
     }
  
-    // ── Painel central: tabela 
+    // Painel central: tabela 
     private JPanel criarPainelTabela() {
         String[] colunas = {"ID", "Nome", "Local", "Data", "Capacidade"};
         modeloTabela = new DefaultTableModel(colunas, 0) {
@@ -91,12 +97,16 @@ public class EventoView extends JFrame {
         return painel;
     }
  
-    // ── Painel inferior: botões 
+    // Painel inferior: botões 
     private JPanel criarPainelBotoes() {
         JButton btnInserir    = new JButton("Inserir Evento");
         JButton btnAtualizar  = new JButton("Atualizar Lista");
         JButton btnLimpar     = new JButton("Limpar Campos");
- 
+        JButton btnEditar  	  = new JButton("Salvar");
+        JButton btnExcluir    = new JButton("Excluir Evento");
+
+        btnEditar.addActionListener(e -> editarEvento());
+        btnExcluir.addActionListener(e -> excluirEvento());
         btnInserir.addActionListener(e -> inserirEvento());
         btnAtualizar.addActionListener(e -> carregarTabela());
         btnLimpar.addActionListener(e -> limparCampos());
@@ -105,12 +115,14 @@ public class EventoView extends JFrame {
         painel.add(btnInserir);
         painel.add(btnAtualizar);
         painel.add(btnLimpar);
+        painel.add(btnEditar);
+        painel.add(btnExcluir);
         return painel;
     }
  
-    // ── Lógica: carregar eventos na tabela 
+    // Lógica: carregar eventos na tabela 
     private void carregarTabela() {
-        modeloTabela.setRowCount(0); // limpa as linhas existentes
+        modeloTabela.setRowCount(0); 
         LinkedList<Evento> lista = eventoDAO.listar();
         for (Evento ev : lista) {
             modeloTabela.addRow(new Object[]{
@@ -123,7 +135,7 @@ public class EventoView extends JFrame {
         }
     }
  
-    // ── Lógica: inserir evento 
+    // Lógica: inserir evento 
     private void inserirEvento() {
         String nome       = campoNome.getText().trim();
         String local      = campoLocal.getText().trim();
@@ -133,7 +145,7 @@ public class EventoView extends JFrame {
         // Validação básica
         if (nome.isEmpty() || local.isEmpty() || data.isEmpty() || capTexto.isEmpty()) {
             JOptionPane.showMessageDialog(this,
-                "Por favor, preencha todos os campos.",
+                "Por favor preencher todos os campos.",
                 "Campos obrigatórios", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -162,8 +174,49 @@ public class EventoView extends JFrame {
         limparCampos();
         carregarTabela();
     }
+    
+    private void editarEvento() {
+        if (idSelecionado == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um evento na tabela para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (!validarCampos()) return;
  
-    // ── Preenchimento do formulário ao clicar na tabela 
+        Evento ev = new Evento();
+        ev.setId_evento(idSelecionado);
+        ev.setNome(campoNome.getText().trim());
+        ev.setLocal(campoLocal.getText().trim());
+        ev.setData_evento(campoData.getText().trim());
+        ev.setCapacidade(Integer.parseInt(campoCapacidade.getText().trim()));
+ 
+        eventoDAO.atualizar(ev);
+        JOptionPane.showMessageDialog(this, "Evento atualizado com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+        limparCampos();
+        carregarTabela();
+    }
+    
+    // Excluir evento
+    private void excluirEvento() {
+        if (idSelecionado == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um evento na tabela para excluir.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+ 
+        int confirmacao = JOptionPane.showConfirmDialog(this,
+            "Tem certeza que deseja excluir este evento?",
+            "Confirmar exclusão", JOptionPane.YES_NO_OPTION);
+ 
+        if (confirmacao == JOptionPane.YES_OPTION) {
+            eventoDAO.excluir(idSelecionado);
+            JOptionPane.showMessageDialog(this, "Evento excluído com sucesso!", "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            limparCampos();
+            carregarTabela();
+        }
+    }
+
+
+ 
+    // Lógica: preencher formulário ao clicar na tabela 
     private void preencherFormularioComLinhaSelecionada() {
         int linha = tabela.getSelectedRow();
         if (linha < 0) return;
@@ -171,15 +224,34 @@ public class EventoView extends JFrame {
         campoLocal.setText((String) modeloTabela.getValueAt(linha, 2));
         campoData.setText((String) modeloTabela.getValueAt(linha, 3));
         campoCapacidade.setText(String.valueOf(modeloTabela.getValueAt(linha, 4)));
+        idSelecionado = (int) modeloTabela.getValueAt(linha, 0);
     }
+    
+    // Validação de campos
+    private boolean validarCampos() {
+        if (campoNome.getText().trim().isEmpty() || campoLocal.getText().trim().isEmpty()
+                || campoData.getText().trim().isEmpty() || campoCapacidade.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, preencha todos os campos.", "Campos obrigatórios", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        try {
+            Integer.parseInt(campoCapacidade.getText().trim());
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Capacidade deve ser um número inteiro.", "Valor inválido", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
+    }
+
  
-    // ── Limpar campos 
+    // ──limpar campos 
     private void limparCampos() {
         campoNome.setText("");
         campoLocal.setText("");
         campoData.setText("");
         campoCapacidade.setText("");
         tabela.clearSelection();
+        idSelecionado = -1;
     }
  
     // ── Ponto de entrada 

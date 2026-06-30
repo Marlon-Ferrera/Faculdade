@@ -46,4 +46,36 @@ public class EventoDAO {
 			con.desconecta();
 		}
 	}
+	
+    public void atualizar(Evento e) {
+        Conexao con = new Conexao();
+        try {
+            String sql = "UPDATE eventos SET nome = ?, local = ?, data_evento = ?, capacidade = ? WHERE id_evento = ?";
+            PreparedStatement prep = con.getConexao().prepareStatement(sql);
+            prep.setString(1, e.getNome());
+            prep.setString(2, e.getLocal());
+            prep.setString(3, e.getData_evento());
+            prep.setInt(4, e.getCapacidade());
+            prep.setInt(5, e.getId_evento());
+            prep.execute();
+        } catch (Exception E) {
+            E.printStackTrace();
+        } finally {
+            con.desconecta();
+        }
+    }
+ 
+    public void excluir(int id) {
+        Conexao con = new Conexao();
+        try {
+            String sql = "DELETE FROM eventos WHERE id_evento = ?";
+            PreparedStatement prep = con.getConexao().prepareStatement(sql);
+            prep.setInt(1, id);
+            prep.execute();
+        } catch (Exception E) {
+            E.printStackTrace();
+        } finally {
+            con.desconecta();
+        }
+    }
 }
